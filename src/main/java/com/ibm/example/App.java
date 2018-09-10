@@ -70,17 +70,17 @@ public class App {
 
             @Override
             public String getFtpUsernameOut() {
-                return ftpUsername == null ? "myuser" : ftpUsername;
+                return ftpUsername == null ? "my-account-name" : ftpUsername;
             }
 
             @Override
             public String getFtpPasswordOut() {
-                return ftpPassword == null ? "mypassword" : ftpPassword;
+                return ftpPassword == null ? "pass" : ftpPassword;
             }
 
             @Override
             public String getFtpWorkingDirectoryOut() {
-                return ftpDirectory;
+                return ftpDirectory == null ? "/" : ftpDirectory;
             }
         };
 

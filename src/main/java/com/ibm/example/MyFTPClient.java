@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 
 public class MyFTPClient {
@@ -30,21 +31,21 @@ public class MyFTPClient {
         writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
         String response = readLine();
-        if (!response.startsWith("220 ")) {
+        if (!response.startsWith("220")) {
             throw new IOException("SimpleFTP received an unknown response when connecting to the FTP server: " + response);
         }
 
         sendLine("USER " + user);
 
         response = readLine();
-        if (!response.startsWith("331 ")) {
+        if (!response.startsWith("331")) {
             throw new IOException("SimpleFTP received an unknown response after sending the user: " + response);
         }
 
         sendLine("PASS " + pass);
 
         response = readLine();
-        if (!response.startsWith("230 ")) {
+        if (!response.startsWith("230")) {
             throw new IOException("SimpleFTP was unable to log in with the supplied password: " + response);
         }
 
@@ -163,9 +164,13 @@ public class MyFTPClient {
         }
 
         sendLine("STOR " + filename);
-        response = readLine();
-        if (!response.startsWith("150 ")) {
-            throw new IOException("SimpleFTP was not allowed to send the file: " + response);
+
+        boolean checkBeforeSocketCreation = reader.ready();
+        if (checkBeforeSocketCreation) {
+            response = readLine();
+            if (!response.startsWith("150")) {
+                throw new IOException("SimpleFTP was not allowed to send the file: " + response);
+            }
         }
 
         Socket dataSocket;
@@ -173,8 +178,14 @@ public class MyFTPClient {
             ip = resolvePassiveNatAddress(ip);
             dataSocket = new Socket(ip, port);
         } catch (Exception e) {
-            ip = resolvePassiveNatAddress(ip);
-            dataSocket = new Socket(ip, port);
+            throw new IOException("SimpleFTP was not able to connect socket to " + ip + ":" + port);
+        }
+
+        if (!checkBeforeSocketCreation) {
+            response = readLine();
+            if (!response.startsWith("150")) {
+                throw new IOException("SimpleFTP was not allowed to send the file: " + response);
+            }
         }
 
         BufferedOutputStream output = new BufferedOutputStream(dataSocket.getOutputStream());
@@ -190,7 +201,7 @@ public class MyFTPClient {
         input.close();
 
         response = readLine();
-        return response.startsWith("226 ");
+        return response.startsWith("226");
     }
 
 
@@ -236,8 +247,10 @@ public class MyFTPClient {
 
     String readLine() throws IOException {
         String line = reader.readLine();
+        while (reader.ready()) {
+            line += "\n" + reader.readLine();
+        }
         logRead(line);
-
         return line;
     }
 

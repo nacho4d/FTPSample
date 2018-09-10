@@ -16,7 +16,7 @@ import static java.lang.Integer.parseInt;
 class FTPHelper {
 
     // Delays in milliseconds
-    static long[] FTP_STORE_ATTEMPTS_DELAYS = new long []{ 0, 5*1000, 10*1000, 15*1000, 15*1000};
+    static long[] FTP_STORE_ATTEMPTS_DELAYS = new long []{ 0, 1*1000, 2*1000, 2*1000, 2*1000};
 
     private static void ftpLog(FTPTraceListener listener, String message) {
         if (listener != null && listener.isActive()) {

@@ -163,17 +163,18 @@ public class MyFTPClient {
         }
 
         sendLine("STOR " + filename);
+        response = readLine();
+        if (!response.startsWith("150 ")) {
+            throw new IOException("SimpleFTP was not allowed to send the file: " + response);
+        }
+
         Socket dataSocket;
         try {
+            ip = resolvePassiveNatAddress(ip);
             dataSocket = new Socket(ip, port);
         } catch (Exception e) {
             ip = resolvePassiveNatAddress(ip);
             dataSocket = new Socket(ip, port);
-        }
-
-        response = readLine();
-        if (!response.startsWith("150 ")) {
-            throw new IOException("SimpleFTP was not allowed to send the file: " + response);
         }
 
         BufferedOutputStream output = new BufferedOutputStream(dataSocket.getOutputStream());
